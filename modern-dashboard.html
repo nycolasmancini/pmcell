@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Diário PMCELL</title>
+
+<!-- Chart.js -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  /* Cores principais */
+  --primary: #FF6B35;
+  --primary-light: #FF8F6B;
+  --primary-dark: #E55A2B;
+  
+  /* Cores de status */
+  --success: #10B981;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --info: #3B82F6;
+  
+  /* Neutros */
+  --bg: #F9FAFB;
+  --surface: #FFFFFF;
+  --border: #E5E7EB;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  
+  /* Sombras e efeitos */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Dimensões */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: all 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Header ===== */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-right: auto;
+}
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 4px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== Controls ===== */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+select, button {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+select:hover {
+  border-color: var(--primary-light);
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== Radio Group ===== */
+.radio-group {
+  display: flex;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 4px;
+}
+
+.radio-group label {
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.radio-group input[type="radio"] {
+  display: none;
+}
+
+.radio-group input[type="radio"]:checked ~ span {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+/* ===== Main Content ===== */
+.main-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* ===== Grid ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 1200px) {
+  .grid.finance {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ===== Cards ===== */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(255, 107, 53, 0.2);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card h3 {
+  margin: 0 0 16px 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.sub {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.metric-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+/* ===== Indicadores de tendência ===== */
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.trend.up {
+  color: var(--success);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.trend.down {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.trend.equal {
+  color: var(--text-muted);
+  background: var(--bg);
+}
+
+/* ===== Card Saldo ===== */
+.saldo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.saldo-item {
+  text-align: center;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.saldo-item .sub {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.saldo-item .value {
+  font-size: 1.25rem;
+}
+
+/* ===== Card Lista ===== */
+.list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.list-item strong {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* ===== Gráficos ===== */
+canvas {
+  margin-top: 16px;
+  max-height: 100px;
+}
+
+/* ===== Tabela ===== */
+.table-section {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-top: 32px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.table-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin: -24px;
+  padding: 24px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+th {
+  background: var(--bg);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+tr:hover td {
+  background: var(--bg);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== Modal ===== */
+#modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-box {
+  background: var(--surface);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  animation: modalSlide 0.3s ease;
+}
+
+@keyframes modalSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-box h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: var(--transition);
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+}
+
+.modal-box form {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: capitalize;
+}
+
+.form-group input {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: var(--transition);
+  background: var(--bg);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  background: var(--surface);
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.btn-cancel {
+  background: var(--bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-cancel:hover {
+  background: var(--border);
+  border-color: var(--border);
+  transform: none;
+  box-shadow: none;
+}
+
+/* ===== Responsividade ===== */
+@media (max-width: 768px) {
+  .header-content {
+    gap: 16px;
+  }
+  
+  .logo {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .saldo-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-box {
+    padding: 24px;
+  }
+  
+  .modal-box form {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <div class="logo">PMCELL Dashboard</div>
+    
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="finance">Financeiro</button>
+      <button class="tab-btn" data-tab="advanced">Avançados</button>
+    </div>
+    
+    <div class="controls">
+      <select id="monthSel"></select>
+      <input type="date" id="dateSel" style="display:none;">
+      <button id="addBtn">
+        <span>+</span>
+        Novo Registro
+      </button>
+      <div class="radio-group">
+        <label>
+          <input type="radio" name="mode" value="day" checked>
+          <span>Dia</span>
+        </label>
+        <label>
+          <input type="radio" name="mode" value="month">
+          <span>Mês</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="main-content">
+  <section id="finance" class="grid finance"></section>
+  <section id="advanced" class="grid" style="display:none"></section>
+  
+  <div class="table-section">
+    <div class="table-header">
+      <h3 class="table-title">Histórico de Dados</h3>
+    </div>
+    <div class="table-wrap">
+      <table id="dataTbl"></table>
+    </div>
+  </div>
+</div>
+
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h4>Adicionar/Editar Registro</h4>
+      <button class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</button>
+    </div>
+    <form id="dataForm"></form>
+  </div>
+</div>
+
+<script>
+/* ---------- dados demo ---------- */
+const templateRow = {
+  data: '', saldoI: '', saldoN: '', saldoD: '', saldoC: '', contasP: '', contasR: '',
+  pedidosDia: '', pedidosAb: '', fatur: '', cmv: '', margem: '', compras: '', leads: '',
+  novos: '', desp: '', vCartao: '', vVista: '', vPrazo: '', envios: '', lalamove: '',
+  melhor: '', braspress: '', correios: '', taxi: ''
+};
+
+let db = [
+  {
+    data: '2025-06-10', fatur: 120000, cmv: 60000, margem: 0.25, compras: 45000,
+    saldoI: 15000, saldoN: 18000, saldoD: 7000, saldoC: 12000, contasP: 23000,
+    contasR: 28000, pedidosDia: 85, pedidosAb: 20, leads: 140, novos: 15, desp: 12000,
+    vCartao: 38000, vVista: 20000, vPrazo: 22000, envios: 70, lalamove: 800, melhor: 1200,
+    braspress: 900, correios: 700, taxi: 300
+  },
+  {
+    data: '2025-06-11', fatur: 90000, cmv: 47000, margem: 0.22, compras: 30000,
+    saldoI: 14000, saldoN: 17000, saldoD: 7000, saldoC: 11000, contasP: 19000,
+    contasR: 26000, pedidosDia: 70, pedidosAb: 25, leads: 120, novos: 12, desp: 10000,
+    vCartao: 34000, vVista: 18000, vPrazo: 18000, envios: 65, lalamove: 700, melhor: 900,
+    braspress: 850, correios: 600, taxi: 260
+  },
+];
+
+/* ---------- utilidades ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const sum = (a, f) => a.reduce((t, o) => t + Number(o[f] || 0), 0);
+const avg = (a, f) => a.length ? sum(a, f) / a.length : 0;
+const diff = (a, b) => a > b ? 1 : a < b ? -1 : 0;
+const fmt = (v, p = false) => p ? `${v.toFixed(1).replace('.', ',')}%`
+  : `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/* ---------- construção de cards ---------- */
+const financeIds = ["fatur", "cmv", "margem", "saldo", "contasP", "contasR",
+  "pedidosDia", "pedidosAb", "compras"];
+const advIds = ["ticket", "lucro", "desp", "leads", "conv", "novos",
+  "vCartao", "vVista", "vPrazo", "envios"];
+const titles = {
+  fatur: "Faturamento Total", cmv: "Custo de Mercadoria (CMV)",
+  margem: "Margem Bruta", saldo: "Saldos Bancários", contasP: "Fornecedores a Pagar",
+  contasR: "Contas a Receber", pedidosDia: "Pedidos do Dia", pedidosAb: "Pedidos Pendentes",
+  compras: "Total de Compras", ticket: "Ticket Médio", lucro: "Lucro Bruto",
+  desp: "Despesas Operacionais", leads: "Leads Gerados", conv: "Taxa de Conversão",
+  novos: "Novos Clientes", vCartao: "Vendas Cartão", vVista: "Vendas à Vista",
+  vPrazo: "Vendas a Prazo", envios: "Envios em Trânsito", vFrete: "Custos de Frete"
+};
+
+function buildCards() {
+  const financeEl = $("#finance");
+  const advEl = $("#advanced");
+  
+  financeEl.innerHTML = financeIds.map(id => 
+    `<div class="card" id="card-${id}">
+      <h3>${titles[id]}</h3>
+      <div class="card-body"></div>
+    </div>`
+  ).join('');
+  
+  advEl.innerHTML = advIds.map(id => 
+    `<div class="card" id="card-${id}">
+      <h3>${titles[id]}</h3>
+      <div class="card-body"></div>
+    </div>`
+  ).join('') + 
+  `<div class="card" id="card-vFrete">
+    <h3>${titles.vFrete}</h3>
+    <div class="card-body"></div>
+  </div>`;
+}
+
+/* ---------- métricas ---------- */
+let mode = 'day', selYM = '', selDate = '';
+
+function fillMonths() {
+  const set = new Set(db.map(r => r.data.slice(0, 7)));
+  $("#monthSel").innerHTML = [...set].sort().map(m => `<option>${m}</option>`).join('');
+  selYM = [...set].pop();
+  $("#monthSel").value = selYM;
+  
+  // Configurar data inicial
+  const lastDate = db.length ? db[db.length - 1].data : new Date().toISOString().slice(0, 10);
+  selDate = lastDate;
+  $("#dateSel").value = selDate;
+}
+
+function calc() {
+  const rows = db.filter(r => r.data.startsWith(selYM));
+  
+  // Para modo dia, usar a data selecionada
+  const today = mode === 'day' ? 
+    (db.find(r => r.data === selDate) || templateRow) : 
+    (rows.length ? rows[rows.length - 1] : templateRow);
+    
+  // Encontrar registro anterior para comparação
+  const todayIndex = db.findIndex(r => r.data === selDate);
+  const prev = todayIndex > 0 ? db[todayIndex - 1] : templateRow;
+
+  const m = {
+    fatur: { d: today.fatur, m: sum(rows, 'fatur') },
+    cmv: { d: today.cmv, m: sum(rows, 'cmv') },
+    margem: { d: today.margem * 100, m: avg(rows, 'margem') * 100 },
+    saldo: { 
+      v: [today.saldoI, today.saldoN, today.saldoD, today.saldoC],
+      // Para modo mês, usar o saldo do último dia do mês
+      m: rows.length > 0 ? 
+         [rows[rows.length-1].saldoI, rows[rows.length-1].saldoN, 
+          rows[rows.length-1].saldoD, rows[rows.length-1].saldoC] :
+         [0, 0, 0, 0]
+    },
+    contasP: { d: today.contasP, m: rows.length > 0 ? rows[rows.length-1].contasP : 0 },
+    contasR: { d: today.contasR, m: rows.length > 0 ? rows[rows.length-1].contasR : 0 },
+    pedidosDia: { d: today.pedidosDia, m: sum(rows, 'pedidosDia') },
+    // Pedidos em aberto também é posição, não soma
+    pedidosAb: { d: today.pedidosAb, m: rows.length > 0 ? rows[rows.length-1].pedidosAb : 0, semEnvio: today.pedidosAb * 1200 },
+    compras: { d: today.compras, m: sum(rows, 'compras') },
+    ticket: { d: today.fatur / today.pedidosDia || 0, m: sum(rows, 'fatur') / sum(rows, 'pedidosDia') || 0 },
+    lucro: { d: today.fatur - today.cmv, m: sum(rows, 'fatur') - sum(rows, 'cmv') },
+    desp: { d: today.desp, m: sum(rows, 'desp') },
+    leads: { d: today.leads, m: sum(rows, 'leads') },
+    conv: {
+      d: (today.pedidosDia / today.leads || 0) * 100,
+      m: (sum(rows, 'pedidosDia') / sum(rows, 'leads') || 0) * 100
+    },
+    novos: { d: today.novos, m: sum(rows, 'novos') },
+    vCartao: { d: today.vCartao, m: sum(rows, 'vCartao') },
+    vVista: { d: today.vVista, m: sum(rows, 'vVista') },
+    vPrazo: { d: today.vPrazo, m: sum(rows, 'vPrazo') },
+    // Envios em trânsito também é posição
+    envios: { d: today.envios, m: rows.length > 0 ? rows[rows.length-1].envios : 0 },
+    vFrete: {
+      d: [today.lalamove, today.melhor, today.braspress, today.correios, today.taxi],
+      m: [sum(rows, 'lalamove'), sum(rows, 'melhor'), sum(rows, 'braspress'),
+      sum(rows, 'correios'), sum(rows, 'taxi')]
+    }
+  };
+  
+  m.prev = {
+    fatur: prev.fatur, cmv: prev.cmv, margem: prev.margem * 100,
+    ticket: prev.fatur / prev.pedidosDia || 0, lucro: prev.fatur - prev.cmv,
+    desp: prev.desp, leads: prev.leads, conv: (prev.pedidosDia / prev.leads || 0) * 100,
+    novos: prev.novos, vCartao: prev.vCartao, vVista: prev.vVista,
+    vPrazo: prev.vPrazo, envios: prev.envios
+  };
+  
+  return { rows, m };
+}
+
+/* ---------- render ---------- */
+let charts = {};
+
+function render() {
+  const { rows, m } = calc();
+  
+  // Adicionar indicador da data selecionada quando em modo dia
+  if (mode === 'day') {
+    const dateObj = new Date(selDate + 'T12:00:00');
+    const formattedDate = dateObj.toLocaleDateString('pt-BR', { 
+      day: '2-digit', 
+      month: 'long', 
+      year: 'numeric' 
+    });
+    
+    // Atualizar título ou adicionar indicador
+    const header = document.querySelector('.logo');
+    if (header) {
+      header.textContent = `PMCELL Dashboard - ${formattedDate}`;
+    }
+  } else {
+    const header = document.querySelector('.logo');
+    if (header) {
+      header.textContent = 'PMCELL Dashboard';
+    }
+  }
+
+  /* Financeiro */
+  financeIds.forEach(id => {
+    const el = $("#card-" + id + " .card-body");
+    el.innerHTML = '';
+    
+    if (id === 'saldo') {
+      el.innerHTML = '<div class="saldo-grid"></div>';
+      const grid = el.querySelector('.saldo-grid');
+      const saldoValues = mode === 'day' ? m.saldo.v : m.saldo.m;
+      ['Itaú', 'Nubank', 'Dinheiro', 'Cartão'].forEach((lb, i) =>
+        grid.innerHTML += `<div class="saldo-item">
+          <span class="sub">${lb}</span>
+          <div class="value">${fmt(saldoValues[i] || 0)}</div>
+        </div>`
+      );
+      if (mode === 'month') {
+        el.innerHTML += `<div class="sub" style="text-align: center; margin-top: 12px; grid-column: 1 / -1;">Saldos do último dia do mês</div>`;
+      }
+      return;
+    }
+    
+    const v = mode === 'day' ? m[id].d : m[id].m;
+    const showPercent = id === 'margem';
+    const isQuantity = ['pedidosDia', 'pedidosAb'].includes(id);
+    
+    el.innerHTML = `
+      <div class="metric-row">
+        <div class="value">${showPercent ? fmt(v, true) : isQuantity ? Math.round(v) : fmt(v)}</div>
+      </div>
+      ${id === 'pedidosAb' ? `<div class="sub">Valor pendente: ${fmt(m[id].semEnvio)}</div>` : ''}
+      ${mode === 'month' && ['fatur', 'cmv', 'margem'].includes(id) ?
+        `<div class="sub">Hoje: ${showPercent ? fmt(m[id].d, true) : fmt(m[id].d)}</div>` : ''}
+      ${mode === 'month' && ['contasP', 'contasR'].includes(id) ?
+        `<div class="sub">Posição do último dia do mês</div>` : ''}
+      ${mode === 'month' && id === 'pedidosAb' ?
+        `<div class="sub">Posição do último dia: ${Math.round(v)} pedidos</div>` : ''}
+      ${mode === 'month' && id === 'pedidosDia' ?
+        `<div class="sub">Total no mês: ${Math.round(v)} pedidos</div>` : ''}
+      <canvas id="c-${id}"></canvas>`;
+
+    /* gráfico */
+    const ctx = $("#c-" + id);
+    if (charts[id]) charts[id].destroy();
+
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 100);
+    gradient.addColorStop(0, 'rgba(255, 107, 53, 0.3)');
+    gradient.addColorStop(1, 'rgba(255, 107, 53, 0.01)');
+
+    charts[id] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: rows.slice(-30).filter(r => r.data.startsWith(selYM)).map(r => {
+          const day = parseInt(r.data.slice(-2));
+          return `${day}`;
+        }),
+        datasets: [{
+          data: rows.slice(-30).filter(r => r.data.startsWith(selYM)).map(r => showPercent ? (r[id] || 0) * 100 : r[id] || 0),
+          fill: true,
+          borderColor: '#FF6B35',
+          backgroundColor: gradient,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            padding: 8,
+            cornerRadius: 4,
+            titleFont: { size: 12 },
+            bodyFont: { size: 12 },
+            callbacks: {
+              title: function(context) {
+                return 'Dia ' + context[0].label;
+              },
+              label: function(context) {
+                return showPercent ? context.parsed.y.toFixed(1) + '%' : 'R$ ' + context.parsed.y.toLocaleString('pt-BR');
+              }
+            }
+          }
+        },
+        scales: {
+          x: { 
+            display: true,
+            grid: { display: false },
+            ticks: { 
+              font: { size: 11 },
+              color: '#9CA3AF',
+              maxRotation: 0
+            }
+          },
+          y: { display: false }
+        }
+      }
+    });
+  });
+
+  /* Avançados */
+  advIds.forEach(id => {
+    const el = $("#card-" + id + " .card-body");
+    el.innerHTML = '';
+    const v = mode === 'day' ? m[id].d : m[id].m;
+    const prev = mode === 'day' ? (m.prev[id] || 0) : 0; // Para modo mês, não mostrar tendência
+    const d = diff(v, prev);
+    const ar = d > 0 ? '▲' : d < 0 ? '▼' : '●';
+    const cl = d > 0 ? 'up' : d < 0 ? 'down' : 'equal';
+    
+    // Determinar unidade de medida
+    const isPercent = id === 'conv';
+    const isCount = ['leads', 'novos', 'envios'].includes(id);
+    const unit = isPercent ? '%' : isCount ? '' : 'R$ ';
+    const diffValue = Math.abs(v - prev);
+    const formattedDiff = isPercent ? diffValue.toFixed(1) + '%' : 
+                          isCount ? Math.round(diffValue).toString() : 
+                          'R$ ' + diffValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    
+    el.innerHTML = `
+      <div class="metric-row">
+        <div class="value" style="font-size: 1.75rem;">${isPercent ? fmt(v, true) : isCount ? Math.round(v) : fmt(v)}</div>
+        ${mode === 'day' ? `<span class="trend ${cl}">${ar} ${formattedDiff}</span>` : ''}
+      </div>
+      ${mode === 'month' ? `<div class="sub">Média diária: ${isPercent ? fmt(m[id].d, true) : isCount ? Math.round(m[id].d) : fmt(m[id].d)}</div>` : ''}`;
+  });
+
+  /* Frete */
+  const frete = $("#card-vFrete .card-body");
+  frete.innerHTML = '<div class="list-items">' +
+    ['Lalamove', 'Melhor Envio', 'Braspress', 'Correios', 'Taxi'].map((l, i) =>
+      `<div class="list-item">
+        <span>${l}</span>
+        <strong>${fmt(m.vFrete.d[i])}</strong>
+      </div>`
+    ).join('') + '</div>';
+
+  buildTable();
+}
+
+/* ---------- tabela ---------- */
+function buildTable() {
+  const tbl = $("#dataTbl");
+  const cols = Object.keys(templateRow).filter(c => c);
+  const colLabels = {
+    data: 'Data', fatur: 'Faturamento', cmv: 'CMV', margem: 'Margem %',
+    saldoI: 'Saldo Itaú', saldoN: 'Saldo Nubank', saldoD: 'Dinheiro', saldoC: 'Cartão',
+    contasP: 'Fornecedores', contasR: 'Contas Receber', pedidosDia: 'Pedidos',
+    pedidosAb: 'Sem Envio', compras: 'Compras', leads: 'Leads', novos: 'Novos Clientes',
+    desp: 'Despesas', vCartao: 'Venda Cartão', vVista: 'Venda Vista', vPrazo: 'Venda Prazo',
+    envios: 'Envios', lalamove: 'Lalamove', melhor: 'Melhor Envio', braspress: 'Braspress',
+    correios: 'Correios', taxi: 'Taxi'
+  };
+  
+  tbl.innerHTML = '<tr><th>Data</th>' + 
+    cols.map(c => `<th>${colLabels[c] || c}</th>`).join('') + '</tr>' +
+    db.map(r => `<tr><td>${r.data}</td>${cols.map(c => {
+      const val = r[c];
+      if (c === 'margem' && val) return `<td>${(val * 100).toFixed(1)}%</td>`;
+      if (typeof val === 'number') return `<td>${val.toLocaleString('pt-BR')}</td>`;
+      return `<td>${val || ''}</td>`;
+    }).join('')}</tr>`).join('');
+}
+
+/* ---------- formulário ---------- */
+const modal = $("#modal");
+const form = $("#dataForm");
+
+$("#addBtn").onclick = () => openForm();
+
+function openForm(selectedDate = null) {
+  const currentDate = selectedDate || new Date().toISOString().slice(0, 10);
+  const existingRow = db.find(r => r.data === currentDate);
+  
+  form.innerHTML = `
+    <div class="form-group" style="grid-column: 1 / -1;">
+      <label>Data do Registro</label>
+      <input type="date" id="dateSelect" value="${currentDate}" style="font-size: 1rem;">
+    </div>
+  `;
+  
+  const fieldLabels = {
+    saldoI: 'Saldo Itaú', saldoN: 'Saldo Nubank', saldoD: 'Dinheiro', saldoC: 'Cartão',
+    contasP: 'Fornecedores a Pagar', contasR: 'Contas a Receber', pedidosDia: 'Pedidos do Dia',
+    pedidosAb: 'Pedidos sem Envio', fatur: 'Faturamento', cmv: 'CMV', margem: 'Margem %',
+    compras: 'Compras', leads: 'Leads', novos: 'Novos Clientes', desp: 'Despesas',
+    vCartao: 'Vendas Cartão', vVista: 'Vendas à Vista', vPrazo: 'Vendas a Prazo',
+    envios: 'Envios', lalamove: 'Frete Lalamove', melhor: 'Frete Melhor Envio',
+    braspress: 'Frete Braspress', correios: 'Frete Correios', taxi: 'Frete Taxi'
+  };
+  
+  const fieldsContainer = document.createElement('div');
+  fieldsContainer.id = 'fieldsContainer';
+  fieldsContainer.style.cssText = 'grid-column: 1 / -1; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));';
+  
+  for (const k in templateRow) {
+    if (k !== 'data') {
+      const existingVal = existingRow ? existingRow[k] : '';
+      const displayVal = k === 'margem' && existingVal ? (existingVal * 100).toFixed(1) : existingVal;
+      const isQuantityField = ['pedidosDia', 'pedidosAb', 'leads', 'novos', 'envios'].includes(k);
+      const placeholderText = existingVal ? 
+        (k === 'margem' ? `Atual: ${displayVal}%` : 
+         isQuantityField ? `Atual: ${existingVal}` :
+         `Atual: ${existingVal.toLocaleString('pt-BR')}`) : '0';
+      
+      fieldsContainer.innerHTML += `
+        <div class="form-group">
+          <label>${fieldLabels[k] || k}</label>
+          <input name="${k}" type="number" step="0.01" placeholder="${placeholderText}">
+        </div>`;
+    }
+  }
+  
+  form.appendChild(fieldsContainer);
+  
+  form.innerHTML += `
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" onclick="document.getElementById('modal').style.display='none'">Cancelar</button>
+      <button type="submit">Salvar</button>
+    </div>`;
+  
+  // Evento para atualizar campos quando mudar a data
+  document.getElementById('dateSelect').addEventListener('change', function(e) {
+    const newDate = e.target.value;
+    openForm(newDate);
+  });
+  
+  modal.style.display = 'flex';
+}
+
+form.onsubmit = e => {
+  e.preventDefault();
+  const selectedDate = document.getElementById('dateSelect').value;
+  const inputs = [...form.querySelectorAll('input[name]')];
+  
+  let row = db.find(r => r.data === selectedDate);
+  if (!row) {
+    row = { ...templateRow, data: selectedDate };
+    db.push(row);
+    db.sort((a, b) => a.data.localeCompare(b.data));
+  }
+  
+  inputs.forEach(i => {
+    const val = i.value;
+    if (val) {
+      if (i.name === 'margem') {
+        row[i.name] = parseFloat(val) / 100;
+      } else {
+        row[i.name] = parseFloat(val);
+      }
+    }
+  });
+  
+  // Atualizar o mês selecionado se necessário
+  fillMonths();
+  if (!selectedDate.startsWith(selYM)) {
+    selYM = selectedDate.slice(0, 7);
+    $("#monthSel").value = selYM;
+  }
+  
+  // Atualizar data selecionada
+  selDate = selectedDate;
+  $("#dateSel").value = selDate;
+  
+  modal.style.display = 'none';
+  render();
+};
+
+modal.onclick = e => {
+  if (e.target.id === 'modal') modal.style.display = 'none';
+};
+
+/* ---------- funções das abas ---------- */
+function switchTab(tabName) {
+  // Remove active class from all tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  // Add active class to clicked button
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+  
+  // Show/hide sections
+  const financeSection = document.getElementById('finance');
+  const advancedSection = document.getElementById('advanced');
+  
+  if (tabName === 'finance') {
+    financeSection.style.display = 'grid';
+    advancedSection.style.display = 'none';
+  } else if (tabName === 'advanced') {
+    financeSection.style.display = 'none';
+    advancedSection.style.display = 'grid';
+  }
+}
+
+/* ---------- inicialização ---------- */
+document.addEventListener('DOMContentLoaded', function() {
+  fillMonths();
+  buildCards();
+  
+  // Configurar visibilidade inicial dos seletores
+  if (mode === 'day') {
+    $("#monthSel").style.display = 'none';
+    $("#dateSel").style.display = 'block';
+  }
+  
+  render();
+  
+  /* eventos das abas */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      switchTab(this.dataset.tab);
+    });
+  });
+  
+  /* eventos dos filtros */
+  document.getElementById("monthSel").addEventListener('change', function(e) {
+    selYM = e.target.value;
+    // Atualizar o seletor de data com o primeiro dia disponível do mês
+    const monthDates = db.filter(r => r.data.startsWith(selYM));
+    if (monthDates.length > 0) {
+      selDate = monthDates[monthDates.length - 1].data;
+      $("#dateSel").value = selDate;
+    }
+    render();
+  });
+  
+  document.getElementById("dateSel").addEventListener('change', function(e) {
+    selDate = e.target.value;
+    // Atualizar o mês se necessário
+    const newMonth = selDate.slice(0, 7);
+    if (newMonth !== selYM) {
+      selYM = newMonth;
+      $("#monthSel").value = selYM;
+    }
+    render();
+  });
+  
+  document.querySelectorAll('input[name=mode]').forEach(radio => {
+    radio.addEventListener('change', function(e) {
+      mode = e.target.value;
+      // Mostrar/esconder seletores apropriados
+      if (mode === 'day') {
+        $("#monthSel").style.display = 'none';
+        $("#dateSel").style.display = 'block';
+      } else {
+        $("#monthSel").style.display = 'block';
+        $("#dateSel").style.display = 'none';
+      }
+      render();
+    });
+  });
+});
+</script>
+</body>
+</html>
+        
