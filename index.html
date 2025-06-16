@@ -15,7 +15,7 @@
   font-family:"Inter",Arial,Helvetica,sans-serif;font-size:16px;
 }
 
-/* ——— layout geral ——— */
+/* ===== layout ===== */
 body{margin:0;background:var(--bg);color:var(--txt);}
 header{display:flex;gap:16px;padding:16px 20px;align-items:center;flex-wrap:wrap}
 select,button{padding:6px 12px;border:1px solid #ccc;border-radius:var(--radius);font:inherit}
@@ -25,10 +25,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .tab-btn{background:#f2f2f2;color:#555}
 .tab-btn.active{background:var(--orange);color:#fff}
 
-/* ——— cards / grid ——— */
+/* ===== cards / grid ===== */
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px}
-.card{background:#fff;border-radius:var(--radius);box-shadow:0 2px 4px rgba(0,0,0,.06);
-      padding:12px;display:flex;flex-direction:column;justify-content:space-between}
+.card{
+  background:#fff;border-radius:var(--radius);
+  box-shadow:0 2px 4px rgba(0,0,0,.06);
+  padding:12px;display:flex;flex-direction:column;justify-content:space-between
+}
 .card.fin {height:240px}
 .card.slim{height:120px}
 .card.list{height:200px}
@@ -37,38 +40,43 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .sub{font-size:.875rem;color:var(--sub)}
 .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;row-gap:4px;height:100%}
 
-/* ——— tabela ——— */
+/* ===== tabela ===== */
 .table-wrap{overflow-x:auto;padding:0 20px 40px}
 table{border-collapse:collapse;width:100%;font-size:.875rem}
 th,td{border:1px solid #ddd;padding:4px 6px}
 
-/* ——— modal / formulário ——— */
+/* ===== modal ===== */
 #modal{position:fixed;inset:0;display:none;background:#0006;align-items:center;justify-content:center}
 .modal-box{
   background:#fff;border-radius:var(--radius);
-  width:90%;max-width:800px;          /* mais larga para 3 colunas */
-  max-height:90vh;overflow-y:auto;   /* nunca estoura a altura da tela */
+  width:90%;max-width:800px;
+  max-height:90vh;overflow-y:auto;
   padding:24px;
 }
 .modal-box h4{margin-top:0}
 .modal-box form{
   display:grid;
   gap:12px 16px;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); /* 2-3 colunas fluidas */
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 }
 .modal-box label{display:flex;flex-direction:column;font-size:.8rem}
 .modal-box input{margin-top:4px;padding:6px;border:1px solid #ccc;border-radius:var(--radius);font:inherit}
 .modal-box button[type=submit]{
-  grid-column:1/-1;                  /* botão ocupa toda a linha */
-  padding:8px 12px;background:var(--orange);color:#fff;border:none;border-radius:var(--radius);cursor:pointer
+  grid-column:1/-1;padding:8px 12px;background:var(--orange);color:#fff;border:none;border-radius:var(--radius);cursor:pointer
 }
 .placeholder{color:#aaa}
 
-/* ——— ícones / mini-gráficos ——— */
+/* ===== gráficos / ícones ===== */
 .arrow{font-size:1.25rem;margin-left:auto}
 .up{color:var(--green)}.down{color:var(--red)}.eq{color:var(--gray)}
-canvas{width:100%!important;height:90px!important}
-@media(max-width:600px){             /* no mobile vira 1 coluna */
+canvas{
+  width:100%;
+  height:100px;          /* altura visível */
+  min-height:90px;
+  display:block;         /* evita colapso */
+  margin-top:4px;
+}
+@media(max-width:600px){
   .modal-box form{grid-template-columns:1fr;}
 }
 </style>
@@ -88,23 +96,15 @@ canvas{width:100%!important;height:90px!important}
   </div>
 </header>
 
-<!-- páginas -->
-<section id="finance"   class="grid"></section>
-<section id="advanced"  class="grid" style="display:none"></section>
+<section id="finance"  class="grid"></section>
+<section id="advanced" class="grid" style="display:none"></section>
 
-<!-- tabela -->
 <div class="table-wrap"><table id="dataTbl"></table></div>
 
-<!-- modal -->
-<div id="modal">
-  <div class="modal-box">
-    <h4>Novo / Editar Registro</h4>
-    <form id="dataForm"></form>
-  </div>
-</div>
+<div id="modal"><div class="modal-box"><h4>Novo / Editar Registro</h4><form id="dataForm"></form></div></div>
 
 <script>
-/* ----------------------------- dados demo ----------------------------- */
+/* ---------- dados demo ---------- */
 const templateRow={data:'',saldoI:'',saldoN:'',saldoD:'',saldoC:'',contasP:'',contasR:'',
   pedidosDia:'',pedidosAb:'',fatur:'',cmv:'',margem:'',compras:'',leads:'',
   novos:'',desp:'',vCartao:'',vVista:'',vPrazo:'',envios:'',lalamove:'',
@@ -121,145 +121,167 @@ let db=[
    contasR:26000,pedidosDia:70,pedidosAb:25,leads:120,novos:12,desp:10000,
    vCartao:34000,vVista:18000,vPrazo:18000,envios:65,lalamove:700,melhor:900,
    braspress:850,correios:600,taxi:260},
-  // ...adicione mais registros
 ];
 
-/* ----------------------------- utilidades ----------------------------- */
-const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-const sum=(a,f)=>a.reduce((t,o)=>t+Number(o[f]||0),0);
-const avg=(a,f)=>a.length?sum(a,f)/a.length:0;
+/* ---------- utilidades ---------- */
+const $ = s=>document.querySelector(s), $$ = s=>document.querySelectorAll(s);
+const sum =(a,f)=>a.reduce((t,o)=>t+Number(o[f]||0),0);
+const avg =(a,f)=>a.length?sum(a,f)/a.length:0;
 const diff=(a,b)=>a>b?1:a<b?-1:0;
-const fmt=(v,p=false)=>p?`${v.toFixed(2).replace('.',',')} %`
+const fmt =(v,p=false)=>p?`${v.toFixed(2).replace('.',',')} %`
                         :`${Number(v).toLocaleString('pt-BR')}`;
 
-/* ----------------------------- construção de cards ----------------------------- */
+/* ---------- construção de cards ---------- */
+const financeIds=["fatur","cmv","margem","saldo","contasP","contasR",
+                  "pedidosDia","pedidosAb","compras"];
+const advIds    =["ticket","lucro","desp","leads","conv","novos",
+                  "vCartao","vVista","vPrazo","envios"];
+const titles={
+  fatur:"Faturamento Total",cmv:"Custo de Mercadoria Vendida (CMV)",
+  margem:"Margem (%)",saldo:"Saldo Bancário",contasP:"Contas a Pagar",
+  contasR:"Contas a Receber",pedidosDia:"Pedidos do Dia",pedidosAb:"Pedidos sem Envio",
+  compras:"Total de Compras",ticket:"Ticket Médio",lucro:"Lucro Bruto",
+  desp:"Despesas Operacionais",leads:"Leads Gerados",conv:"Taxa de Conversão (%)",
+  novos:"Novos Clientes",vCartao:"Vendas no Cartão",vVista:"Vendas à Vista",
+  vPrazo:"Vendas a Prazo",envios:"Envios a Caminho",vFrete:"Custo de Frete"
+};
 const financeEl=$("#finance"), advEl=$("#advanced");
-const cardFin=["fatur","cmv","margem","saldo","contasP","contasR","pedidosDia","pedidosAb","compras"];
-const cardAdv=["ticket","lucro","desp","leads","conv","novos","vCartao","vVista","vPrazo","envios"];
 
 function buildCards(){
-  financeEl.innerHTML=cardFin.map(id=>cardHTML(id,'fin')).join('');
-  advEl.innerHTML = cardAdv.map(id=>cardHTML(id,'slim')).join('')+cardHTML('vFrete','list');
+  financeEl.innerHTML=financeIds.map(id=>cardHTML(id,'fin')).join('');
+  advEl.innerHTML   =advIds.map(id=>cardHTML(id,'slim')).join('')
+                    + cardHTML('vFrete','list');
 }
-function cardHTML(id,t){
-  const cls=t==='fin'?'card fin':t==='slim'?'card slim':'card list';
-  const title={
-    fatur:"Faturamento Total",cmv:"Custo de Mercadoria Vendida (CMV)",
-    margem:"Margem (%)",saldo:"Saldo Bancário",contasP:"Contas a Pagar",
-    contasR:"Contas a Receber",pedidosDia:"Pedidos do Dia",pedidosAb:"Pedidos sem Envio",
-    compras:"Total de Compras",ticket:"Ticket Médio",lucro:"Lucro Bruto",
-    desp:"Despesas Operacionais",leads:"Leads Gerados",conv:"Taxa de Conversão (%)",
-    novos:"Novos Clientes",vCartao:"Vendas no Cartão",vVista:"Vendas à Vista",
-    vPrazo:"Vendas a Prazo",envios:"Envios a Caminho",vFrete:"Custo de Frete"
-  };
-  return `<div class="${cls}" id="card-${id}"><h3>${title[id]}</h3><div class="card-body"></div></div>`;
+function cardHTML(id,type){
+  const cls=type==='fin'?'card fin':type==='slim'?'card slim':'card list';
+  return `<div class="${cls}" id="card-${id}">
+            <h3>${titles[id]}</h3><div class="card-body"></div>
+          </div>`;
 }
 
-/* ----------------------------- métricas ----------------------------- */
+/* ---------- métricas ---------- */
 let mode='day', selYM='';
 function fillMonths(){
   const set=new Set(db.map(r=>r.data.slice(0,7)));
   $("#monthSel").innerHTML=[...set].sort().map(m=>`<option>${m}</option>`).join('');
   selYM=[...set].pop(); $("#monthSel").value=selYM;
 }
-function metrics(){
+function calc(){
   const rows=db.filter(r=>r.data.startsWith(selYM));
-  const today=rows.at(-1)||templateRow, prev=rows.at(-2)||templateRow;
-  const m={fatur:{d:today.fatur,m:sum(rows,'fatur')},
-    cmv:{d:today.cmv,m:sum(rows,'cmv')},
+  const today=rows.length?rows[rows.length-1]:templateRow;
+  const prev =rows.length>1?rows[rows.length-2]:templateRow;
+
+  const m={
+    fatur:{d:today.fatur,m:sum(rows,'fatur')},
+    cmv  :{d:today.cmv  ,m:sum(rows,'cmv')},
     margem:{d:today.margem*100,m:avg(rows,'margem')*100},
-    saldo:{v:[today.saldoI,today.saldoN,today.saldoD,today.saldoC]},
+    saldo :{v:[today.saldoI,today.saldoN,today.saldoD,today.saldoC]},
     contasP:{d:today.contasP,m:sum(rows,'contasP')},
     contasR:{d:today.contasR,m:sum(rows,'contasR')},
     pedidosDia:{d:today.pedidosDia,m:sum(rows,'pedidosDia')},
-    pedidosAb:{d:today.pedidosAb,m:sum(rows,'pedidosAb'),semEnvio:today.pedidosAb*20},
+    pedidosAb :{d:today.pedidosAb,m:sum(rows,'pedidosAb'),semEnvio:today.pedidosAb*20},
     compras:{d:today.compras,m:sum(rows,'compras')},
     ticket:{d:today.fatur/today.pedidosDia||0,m:sum(rows,'fatur')/sum(rows,'pedidosDia')||0},
-    lucro:{d:today.fatur-today.cmv,m:sum(rows,'fatur')-sum(rows,'cmv')},
-    desp:{d:today.desp,m:sum(rows,'desp')},
-    leads:{d:today.leads,m:sum(rows,'leads')},
-    conv:{d:(today.pedidosDia/today.leads||0)*100,m:(sum(rows,'pedidosDia')/sum(rows,'leads')||0)*100},
-    novos:{d:today.novos,m:sum(rows,'novos')},
+    lucro :{d:today.fatur-today.cmv,m:sum(rows,'fatur')-sum(rows,'cmv')},
+    desp  :{d:today.desp ,m:sum(rows,'desp')},
+    leads :{d:today.leads,m:sum(rows,'leads')},
+    conv  :{d:(today.pedidosDia/today.leads||0)*100,
+            m:(sum(rows,'pedidosDia')/sum(rows,'leads')||0)*100},
+    novos :{d:today.novos,m:sum(rows,'novos')},
     vCartao:{d:today.vCartao,m:sum(rows,'vCartao')},
-    vVista:{d:today.vVista,m:sum(rows,'vVista')},
-    vPrazo:{d:today.vPrazo,m:sum(rows,'vPrazo')},
-    envios:{d:today.envios,m:sum(rows,'envios')},
-    vFrete:{d:[today.lalamove,today.melhor,today.braspress,today.correios,today.taxi],
-            m:[sum(rows,'lalamove'),sum(rows,'melhor'),sum(rows,'braspress'),
-               sum(rows,'correios'),sum(rows,'taxi')]}
+    vVista :{d:today.vVista ,m:sum(rows,'vVista')},
+    vPrazo :{d:today.vPrazo ,m:sum(rows,'vPrazo')},
+    envios :{d:today.envios ,m:sum(rows,'envios')},
+    vFrete :{d:[today.lalamove,today.melhor,today.braspress,today.correios,today.taxi],
+             m:[sum(rows,'lalamove'),sum(rows,'melhor'),sum(rows,'braspress'),
+                sum(rows,'correios'),sum(rows,'taxi')]}
   };
   m.prev={fatur:prev.fatur,cmv:prev.cmv,margem:prev.margem*100,
           ticket:prev.fatur/prev.pedidosDia||0,lucro:prev.fatur-prev.cmv,
           desp:prev.desp,leads:prev.leads,conv:(prev.pedidosDia/prev.leads||0)*100,
-          novos:prev.novos,vCartao:prev.vCartao,vVista:prev.vVista,vPrazo:prev.vPrazo,envios:prev.envios};
-  return {rows,today,m};
+          novos:prev.novos,vCartao:prev.vCartao,vVista:prev.vVista,
+          vPrazo:prev.vPrazo,envios:prev.envios};
+  return {rows,m};
 }
 
-/* ----------------------------- render ----------------------------- */
+/* ---------- render ---------- */
 let charts={};
 function render(){
-  const {rows,m}=metrics();
+  const {rows,m}=calc();
 
-  /* principais */
-  cardFin.forEach(id=>{
+  /* Financeiro */
+  financeIds.forEach(id=>{
     const el=$("#card-"+id+" .card-body"); el.innerHTML='';
     if(id==='saldo'){
       el.className='card-body center';
-      ['Itaú','Nubank','Dinheiro','Cartão'].forEach((l,i)=>{
-        el.innerHTML+=`<div><span class="sub">${l}</span><div class="value">${fmt(m.saldo.v[i])}</div></div>`;
-      }); return;
+      ['Itaú','Nubank','Dinheiro','Cartão'].forEach((lb,i)=>
+        el.innerHTML+=`<div><span class="sub">${lb}</span><div class="value">${fmt(m.saldo.v[i])}</div></div>`
+      );
+      return;
     }
     const v=mode==='day'?m[id].d:m[id].m;
-    el.innerHTML=`<div>
+    el.innerHTML=`
+      <div>
         <div class="value">${id==='margem'?fmt(v,true):fmt(v)}</div>
         ${id==='pedidosAb'?`<div class="sub">Valor sem envio — R$ ${fmt(m[id].semEnvio)}</div>`:''}
         ${mode==='month'&&['fatur','cmv','margem'].includes(id)?
           `<div class="sub">Hoje: ${id==='margem'?fmt(m[id].d,true):fmt(m[id].d)}</div>`:''}
-      </div><canvas id="c-${id}"></canvas>`;
+      </div>
+      <canvas id="c-${id}"></canvas>`;
+    /* gráfico */
+    const ctx=$("#c-"+id);
     if(charts[id]) charts[id].destroy();
-    charts[id]=new Chart($("#c-"+id),{type:'line',
+    charts[id]=new Chart(ctx,{type:'line',
       data:{labels:rows.slice(-7).map((_,i)=>i+1),
             datasets:[{data:rows.slice(-7).map(r=>r[id]||0),fill:true,
-              borderColor:'rgba(255,122,0,1)',backgroundColor:'rgba(255,178,102,.15)',tension:.4}]},
-      options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}});
+              borderColor:'rgba(255,122,0,1)',
+              backgroundColor:'rgba(255,178,102,.15)',
+              tension:.4}]},
+      options:{plugins:{legend:{display:false}},
+               scales:{x:{display:false},y:{display:false}}}
+    });
   });
 
-  /* avançados */
-  cardAdv.forEach(id=>{
-    const el=$("#card-"+id+" .card-body"); el.innerHTML='';
+  /* Avançados */
+  advIds.forEach(id=>{
+    const el=$("#card-"+id+" .card-body");
+    el.innerHTML='';
     const v=mode==='day'?m[id].d:m[id].m;
-    const d=diff(v,m.prev[id]||0), a=d>0?'▲':d<0?'▼':'▶', c=d>0?'up':d<0?'down':'eq';
-    el.innerHTML=`<div style="display:flex;align-items:center">
+    const d=diff(v,m.prev[id]||0),  ar=d>0?'▲':d<0?'▼':'▶', cl=d>0?'up':d<0?'down':'eq';
+    el.innerHTML=`
+      <div style="display:flex;align-items:center">
         <div class="value">${id==='conv'?fmt(v,true):fmt(v)}</div>
-        <span class="arrow ${c}">${a}</span></div>
+        <span class="arrow ${cl}">${ar}</span>
+      </div>
       ${mode==='month'?`<div class="sub">Hoje: ${id==='conv'?fmt(m[id].d,true):fmt(m[id].d)}</div>`:''}`;
   });
 
-  /* frete */
+  /* Frete */
   const frete=$("#card-vFrete .card-body");
   frete.innerHTML=['Lalamove','Melhor Envio','Braspress','Correios','Taxi'].map((l,i)=>
-    `<div class="sub">${l}&nbsp;&nbsp;R$ ${fmt(m.vFrete.d[i])} (Mês R$ ${fmt(m.vFrete.m[i])})</div>`
+    `<div class="sub">${l} — R$ ${fmt(m.vFrete.d[i])} (mês ${fmt(m.vFrete.m[i])})</div>`
   ).join('');
 
   buildTable();
 }
 
-/* ----------------------------- tabela ----------------------------- */
+/* ---------- tabela ---------- */
 function buildTable(){
   const tbl=$("#dataTbl"), cols=Object.keys(templateRow).filter(c=>c);
   tbl.innerHTML='<tr><th>Data</th>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr>'+
     db.map(r=>`<tr><td>${r.data}</td>${cols.map(c=>`<td>${r[c]??''}</td>`).join('')}</tr>`).join('');
 }
 
-/* ----------------------------- formulário ----------------------------- */
+/* ---------- formulário ---------- */
 const modal=$("#modal"), form=$("#dataForm");
-$("#addBtn").onclick=()=>openForm(db.at(-1)?.data||new Date().toISOString().slice(0,10));
+$("#addBtn").onclick=()=>openForm(db.length?db[db.length-1].data:new Date().toISOString().slice(0,10));
 function openForm(date){
   form.innerHTML=''; form.date=date;
   const row=db.find(r=>r.data===date)||{...templateRow,data:date};
   for(const k in row) if(k!=='data')
     form.innerHTML+=`<label>${k}<input name="${k}" placeholder="${row[k]||''}" class="placeholder"></label>`;
-  form.innerHTML+='<button type="submit">Salvar</button>'; modal.style.display='flex';
+  form.innerHTML+='<button type="submit">Salvar</button>';
+  modal.style.display='flex';
 }
 form.onsubmit=e=>{
   e.preventDefault();
@@ -271,11 +293,16 @@ form.onsubmit=e=>{
 };
 modal.onclick=e=>{if(e.target.id==='modal') modal.style.display='none'};
 
-/* ----------------------------- inicia ----------------------------- */
+/* ---------- inicialização ---------- */
 fillMonths(); buildCards(); render();
-$$('.tab-btn').forEach(b=>b.onclick=()=>{ $$('.tab-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); $('#finance').style.display=b.dataset.tab==='finance'?'grid':'none';
-  $('#advanced').style.display=b.dataset.tab==='advanced'?'grid':'none';});
+
+/* eventos das abas e filtros */
+$$('.tab-btn').forEach(btn=>btn.onclick=()=>{
+  $$('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  $('#finance').style.display=btn.dataset.tab==='finance'?'grid':'none';
+  $('#advanced').style.display=btn.dataset.tab==='advanced'?'grid':'none';
+});
 $("#monthSel").onchange=e=>{selYM=e.target.value; render();};
 $$('input[name=mode]').forEach(r=>r.onchange=e=>{mode=e.target.value; render();});
 </script>
