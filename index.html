@@ -3,14 +3,19 @@
 <head>
 <meta charset="utf-8" />
 <title>Dashboard Diário PMCELL</title>
+
+<!-- Chart.js -->
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
 <style>
 :root{
   --orange:#FF7A00;--orange-light:#FFB266;--bg:#fff;--txt:#222;--sub:#666;
   --green:#00B050;--red:#C00000;--gray:#A0A0A0;--radius:8px;
   font-family:"Inter",Arial,Helvetica,sans-serif;font-size:16px;
 }
+
+/* ----- layout geral ----- */
 body{margin:0;background:var(--bg);color:var(--txt);}
 header{display:flex;gap:16px;padding:16px 20px;align-items:center;flex-wrap:wrap}
 select,button{padding:6px 12px;border:1px solid #ccc;border-radius:var(--radius);font:inherit}
@@ -19,15 +24,36 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .tabs{display:flex;gap:8px}
 .tab-btn{background:#f2f2f2;color:#555}
 .tab-btn.active{background:var(--orange);color:#fff}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px}
-.card{background:#fff;border-radius:var(--radius);box-shadow:0 2px 4px rgba(0,0,0,.06);padding:12px;display:flex;flex-direction:column;justify-content:space-between}
-.card.fin{height:300px}
-.card.slim{height:180px}
-.card.list{height:240px}
+
+/* ----- cards / grid ----- */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);      /* 3 cards por linha */
+  gap:16px;
+  padding:20px
+}
+.card{
+  background:#fff;border-radius:var(--radius);
+  box-shadow:0 2px 4px rgba(0,0,0,.06);
+  padding:12px;
+  display:flex;flex-direction:column;justify-content:space-between
+}
+/* alturas reduzidas */
+.card.fin {height:240px}   /* principais */
+.card.slim{height:120px}   /* KPIs avançados mais finos */
+.card.list{height:200px}   /* lista de fretes */
 .card h3{margin:0 0 6px;font-size:1rem;font-weight:600}
-.value{font-size:1.75rem;font-weight:700}
+.value{font-size:1.5rem;font-weight:700}
 .sub{font-size:.875rem;color:var(--sub)}
-.center{display:grid;place-items:center;text-align:center;row-gap:4px}
+
+/* saldo bancário centralizado */
+.center{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;row-gap:4px;height:100%
+}
+
+/* tabela, modal (inalterados) */
 .table-wrap{overflow-x:auto;padding:0 20px 40px}
 table{border-collapse:collapse;width:100%;font-size:.875rem}
 th,td{border:1px solid #ddd;padding:4px 6px}
@@ -39,7 +65,7 @@ th,td{border:1px solid #ddd;padding:4px 6px}
 .placeholder{color:#aaa}
 .arrow{font-size:1.25rem;margin-left:auto}
 .up{color:var(--green)}.down{color:var(--red)}.eq{color:var(--gray)}
-canvas{width:100%!important;height:120px!important}
+canvas{width:100%!important;height:90px!important}  /* canvas menor */
 </style>
 </head>
 <body>
@@ -57,20 +83,25 @@ canvas{width:100%!important;height:120px!important}
   </div>
 </header>
 
-<!-- PAGE 1 -->
+<!-- página 1 -->
 <section id="finance" class="grid"></section>
 
-<!-- PAGE 2 -->
+<!-- página 2 -->
 <section id="advanced" class="grid" style="display:none"></section>
 
-<!-- TABLE (demo) -->
+<!-- tabela completa -->
 <div class="table-wrap"><table id="dataTbl"></table></div>
 
-<!-- MODAL FORM -->
-<div id="modal"><div class="modal-box"><h4>Novo / Editar Registro</h4><form id="dataForm"></form></div></div>
+<!-- modal -->
+<div id="modal">
+  <div class="modal-box">
+    <h4>Novo / Editar Registro</h4>
+    <form id="dataForm"></form>
+  </div>
+</div>
 
 <script>
-// ---------- demo dataset ----------
+// ---------- dataset demo ----------
 const templateRow = {
   data:'', saldoI:'', saldoN:'', saldoD:'', saldoC:'',
   contasP:'', contasR:'', pedidosDia:'', pedidosAb:'', fatur:'' , cmv:'',
@@ -78,7 +109,7 @@ const templateRow = {
   vVista:'', vPrazo:'', envios:'', lalamove:'', melhor:'', braspress:'',
   correios:'', taxi:''
 };
-let db=[ // últimos 9 dias, valores fictícios
+let db=[
   {data:'2025-06-10',fatur:120000,cmv:60000,margem:0.25,compras:45000,
    saldoI:15000,saldoN:18000,saldoD:7000,saldoC:12000,contasP:23000,
    contasR:28000,pedidosDia:85,pedidosAb:20,leads:140,novos:15,desp:12000,
@@ -89,33 +120,36 @@ let db=[ // últimos 9 dias, valores fictícios
    contasR:26000,pedidosDia:70,pedidosAb:25,leads:120,novos:12,desp:10000,
    vCartao:34000,vVista:18000,vPrazo:18000,envios:65,lalamove:700,melhor:900,
    braspress:850,correios:600,taxi:260},
-  // ...insira mais linhas
+  // ...adicione mais linhas
 ];
-// ---------- helpers ----------
-const $=s=>document.querySelector(s);
-const $$=s=>document.querySelectorAll(s);
-const sum=(arr,field)=>arr.reduce((t,o)=>t+Number(o[field]||0),0);
-const avg=(arr,field)=>arr.length?sum(arr,field)/arr.length:0;
-const last=(arr,field)=>Number(arr[arr.length-1]?.[field]||0);
-function diff(a,b){return a>b?1:a<b?-1:0}
 
-// ---------- UI BUILD ----------
-const financeEl=$("#finance"),advEl=$("#advanced");
-const cardOrderFin=[
-  "fatur","cmv","margem","saldo","contasP","contasR","pedidosDia","pedidosAb","compras"
-];
-const kpiAdv=[
-  "ticket","lucro","desp","leads","conv","novos","vCartao","vVista","vPrazo","envios"
-];
+// ---------- helpers ----------
+const $  = s=>document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+const sum=(arr,f)=>arr.reduce((t,o)=>t+Number(o[f]||0),0);
+const avg=(arr,f)=>arr.length?sum(arr,f)/arr.length:0;
+const last=(arr,f)=>Number(arr[arr.length-1]?.[f]||0);
+const diff=(a,b)=>a>b?1:a<b?-1:0;
+
+function fmt(v,isPct=false){
+  return isPct?`${v.toFixed(2).replace('.',',')} %`
+              :`${Number(v).toLocaleString('pt-BR')}`;
+}
+
+// ---------- construção inicial ----------
+const financeEl=$("#finance"), advEl=$("#advanced");
+const cardOrderFin=["fatur","cmv","margem","saldo","contasP","contasR","pedidosDia","pedidosAb","compras"];
+const kpiAdv=["ticket","lucro","desp","leads","conv","novos","vCartao","vVista","vPrazo","envios"];
+
 function buildCards(){
-  financeEl.innerHTML=cardOrderFin.map(id=>cardHTML(id,'fin')).join('');
-  advEl.innerHTML=kpiAdv.map(id=>
-    id==="vFrete"?cardHTML(id,'list'):(["vCartao","vVista","vPrazo","envios"].includes(id)?cardHTML(id,'slim'):cardHTML(id,'slim'))
-  ).join('')+cardHTML('vFrete','list');
+  financeEl.innerHTML = cardOrderFin.map(id=>cardHTML(id,'fin')).join('');
+  advEl.innerHTML = kpiAdv.map(id=>
+    cardHTML(id,["vCartao","vVista","vPrazo","envios"].includes(id)?'slim':'slim')
+  ).join('') + cardHTML('vFrete','list');
 }
 function cardHTML(id,type){
-  const classes=type==='fin'?'card fin':type==='slim'?'card slim':'card list';
-  const titles={
+  const cls = type==='fin' ? 'card fin' : type==='slim' ? 'card slim' : 'card list';
+  const titles = {
     fatur:"Faturamento Total",cmv:"Custo de Mercadoria Vendida (CMV)",
     margem:"Margem (%)",saldo:"Saldo Bancário",contasP:"Contas a Pagar",
     contasR:"Contas a Receber",pedidosDia:"Pedidos do Dia",
@@ -125,23 +159,23 @@ function cardHTML(id,type){
     vCartao:"Vendas no Cartão",vVista:"Vendas à Vista",vPrazo:"Vendas a Prazo",
     envios:"Envios a Caminho",vFrete:"Custo de Frete"
   };
-  return `<div class="${classes}" id="card-${id}">
-      <h3>${titles[id]}</h3>
-      <div class="card-body"></div>
-    </div>`;
+  return `<div class="${cls}" id="card-${id}">
+            <h3>${titles[id]}</h3>
+            <div class="card-body"></div>
+          </div>`;
 }
 
-// ---------- DATA & RENDER ----------
+// ---------- cálculos ----------
 let mode='day', selYM='';
 function fillMonthOptions(){
   const set=new Set(db.map(r=>r.data.slice(0,7)));
   $("#monthSel").innerHTML=[...set].sort().map(m=>`<option value="${m}">${m}</option>`).join('');
-  selYM=[...set].pop();$("#monthSel").value=selYM;
+  selYM=[...set].pop(); $("#monthSel").value=selYM;
 }
 function calcMetrics(){
   const rows=db.filter(r=>r.data.startsWith(selYM));
   const today=rows[rows.length-1]||templateRow;
-  const prev=rows[rows.length-2]||templateRow;
+  const prev = rows[rows.length-2]||templateRow;
   const metrics={
     fatur:{day:today.fatur,month:sum(rows,'fatur')},
     cmv:{day:today.cmv,month:sum(rows,'cmv')},
@@ -150,7 +184,7 @@ function calcMetrics(){
     contasP:{day:today.contasP,month:sum(rows,'contasP')},
     contasR:{day:today.contasR,month:sum(rows,'contasR')},
     pedidosDia:{day:today.pedidosDia,month:sum(rows,'pedidosDia')},
-    pedidosAb:{day:today.pedidosAb,month:sum(rows,'pedidosAb'),valSemEnvio:today.pedidosAb*20}, // fictício
+    pedidosAb:{day:today.pedidosAb,month:sum(rows,'pedidosAb'),valSemEnvio:today.pedidosAb*20},
     compras:{day:today.compras,month:sum(rows,'compras')},
     ticket:{day:today.fatur/today.pedidosDia||0,month:sum(rows,'fatur')/sum(rows,'pedidosDia')||0},
     lucro:{day:today.fatur-today.cmv,month:sum(rows,'fatur')-sum(rows,'cmv')},
@@ -170,56 +204,92 @@ function calcMetrics(){
         sum(rows,'taxi')]
     }
   };
-  metrics.prev={fatur:prev.fatur,cmv:prev.cmv,margem:prev.margem*100,
+  metrics.prev={
+    fatur:prev.fatur,cmv:prev.cmv,margem:prev.margem*100,
     ticket:prev.fatur/prev.pedidosDia||0,lucro:prev.fatur-prev.cmv,
     desp:prev.desp,leads:prev.leads,conv:(prev.pedidosDia/prev.leads||0)*100,
-    novos:prev.novos,vCartao:prev.vCartao,vVista:prev.vVista,vPrazo:prev.vPrazo,envios:prev.envios};
+    novos:prev.novos,vCartao:prev.vCartao,vVista:prev.vVista,vPrazo:prev.vPrazo,envios:prev.envios
+  };
   return {rows,today,metrics};
 }
+
+// ---------- renderização ----------
 let charts={};
 function render(){
   const {rows,metrics}=calcMetrics();
-  // finance cards
+
+  // --- finance ---
   cardOrderFin.forEach(id=>{
     const el=$("#card-"+id+" .card-body");
     el.innerHTML='';
+
     if(id==='saldo'){
       el.className="card-body center";
       ['Itaú','Nubank','Dinheiro','Cartão'].forEach((lbl,i)=>{
-        el.innerHTML+=`<div><span class="sub">${lbl}</span><div class="value" style="font-size:20px">${fmt(metrics.saldo.vals[i])}</div></div>`;
+        el.innerHTML+=`<div><span class="sub">${lbl}</span><div class="value">${fmt(metrics.saldo.vals[i])}</div></div>`;
       });
-    }else{
-      const val=mode==='day'?metrics[id].day:metrics[id].month;
-      el.innerHTML=`<div><div class="value">${id==='margem'?fmt(val,true):fmt(val)}</div>${id==='pedidosAb'?`<div class="sub">Valor sem envio — R$ ${fmt(metrics[id].valSemEnvio)}</div>`:''}${mode==='month'&&['fatur','cmv','margem'].includes(id)?`<div class="sub">Hoje: ${id==='margem'?fmt(metrics[id].day,true):fmt(metrics[id].day)}</div>`:''}</div><canvas id="c-${id}"></canvas>`;
-      if(charts[id])charts[id].destroy();
-      const ctx=$("#c-"+id);
-      const ds=rows.slice(-7).map(r=>r[id]||0);
-      charts[id]=new Chart(ctx,{type:'line',data:{labels:ds.map((_,i)=>i+1),datasets:[{data:ds,fill:true,
-        borderColor:'rgba(255,122,0,1)',backgroundColor:'rgba(255,178,102,.15)',tension:.4}]},
-        options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}});
+      return;
     }
+
+    const val = mode==='day'?metrics[id].day:metrics[id].month;
+    el.innerHTML = `
+      <div>
+        <div class="value">${id==='margem'?fmt(val,true):fmt(val)}</div>
+        ${id==='pedidosAb'
+            ?`<div class="sub">Valor sem envio — R$ ${fmt(metrics[id].valSemEnvio)}</div>`
+            :''}
+        ${mode==='month'&&['fatur','cmv','margem'].includes(id)
+            ?`<div class="sub">Hoje: ${id==='margem'?fmt(metrics[id].day,true):fmt(metrics[id].day)}</div>`
+            :''}
+      </div>
+      <canvas id="c-${id}"></canvas>
+    `;
+
+    if(charts[id]) charts[id].destroy();
+    charts[id] = new Chart($("#c-"+id),{
+      type:'line',
+      data:{
+        labels:rows.slice(-7).map((_,i)=>i+1),
+        datasets:[{data:rows.slice(-7).map(r=>r[id]||0),fill:true,
+          borderColor:'rgba(255,122,0,1)',
+          backgroundColor:'rgba(255,178,102,.15)',
+          tension:.4}]
+      },
+      options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
+    });
   });
-  // advanced cards
+
+  // --- advanced ---
   kpiAdv.forEach(id=>{
     const el=$("#card-"+id+" .card-body");
     el.innerHTML='';
-    const val=mode==='day'?metrics[id].day:metrics[id].month;
-    const diffv=diff(val,metrics.prev[id]||0);
-    const arrow=diffv>0?'▲':diffv<0?'▼':'▶';
-    const cls=diffv>0?'up':diffv<0?'down':'eq';
-    el.innerHTML=`<div style="display:flex;align-items:center"><div class="value">${id==='conv'?fmt(val,true):fmt(val)}</div><span class="arrow ${cls}">${arrow}</span></div>${mode==='month'?`<div class="sub">Hoje: ${id==='conv'?fmt(metrics[id].day,true):fmt(metrics[id].day)}</div>`:''}`;
+    const val = mode==='day'?metrics[id].day:metrics[id].month;
+    const diffv = diff(val,metrics.prev[id]||0);
+    const arrow = diffv>0?'▲':diffv<0?'▼':'▶';
+    const cls = diffv>0?'up':diffv<0?'down':'eq';
+
+    el.innerHTML = `
+      <div style="display:flex;align-items:center">
+        <div class="value">${id==='conv'?fmt(val,true):fmt(val)}</div>
+        <span class="arrow ${cls}">${arrow}</span>
+      </div>
+      ${mode==='month'
+          ?`<div class="sub">Hoje: ${id==='conv'?fmt(metrics[id].day,true):fmt(metrics[id].day)}</div>`
+          :''}
+    `;
   });
-  // frete list
+
+  // --- frete ---
   const frete=$("#card-vFrete .card-body");
   frete.innerHTML=['Lalamove','Melhor Envio','Braspress','Correios','Taxi'].map((l,i)=>{
-    const d=metrics.vFrete.dayVals[i],m=metrics.vFrete.monthVals[i];
-    return `<div class="sub">${l}&nbsp;&nbsp;R$ ${fmt(d)}&nbsp;(Mês&nbsp;R$ ${fmt(m)})</div>`;
+    const d=metrics.vFrete.dayVals[i], m=metrics.vFrete.monthVals[i];
+    return `<div class="sub">${l}&nbsp;&nbsp;R$ ${fmt(d)} (Mês R$ ${fmt(m)})</div>`
   }).join('');
+
   buildTable();
 }
-function fmt(v,percent=false){return percent?`${v.toFixed(2).replace('.',',')} %`:`${Number(v).toLocaleString('pt-BR')}`}
 
-// ---------- TABLE ----------
+// ---------- tabela ----------
 function buildTable(){
   const tbl=$("#dataTbl");
   const cols=Object.keys(templateRow).filter(c=>c!=='');
@@ -227,15 +297,16 @@ function buildTable(){
     db.map(r=>`<tr><td>${r.data}</td>${cols.map(c=>`<td>${r[c]??''}</td>`).join('')}</tr>`).join('');
 }
 
-// ---------- FORM ----------
-const modal=$("#modal"),form=$("#dataForm");
-$("#addBtn").onclick=()=>{openForm(db[db.length-1]?.data||new Date().toISOString().slice(0,10))};
+// ---------- formulário ----------
+const modal=$("#modal"), form=$("#dataForm");
+$("#addBtn").onclick=()=>openForm(db[db.length-1]?.data||new Date().toISOString().slice(0,10));
+
 function openForm(dateStr){
   form.innerHTML='';
   form.date=dateStr;
   const row=db.find(r=>r.data===dateStr)||{...templateRow,data:dateStr};
   for(const k in row){
-    if(k==='data')continue;
+    if(k==='data') continue;
     form.innerHTML+=`<label>${k}<input name="${k}" placeholder="${row[k]||''}" class="placeholder"></label>`;
   }
   form.innerHTML+='<button type="submit">Salvar</button>';
@@ -245,17 +316,26 @@ form.onsubmit=e=>{
   e.preventDefault();
   const inputs=[...form.querySelectorAll('input')];
   let row=db.find(r=>r.data===form.date);
-  if(!row){row={...templateRow,data:form.date};db.push(row);}
-  inputs.forEach(inp=>{row[inp.name]=inp.value||row[inp.name];});
-  modal.style.display='none';render();
+  if(!row){row={...templateRow,data:form.date}; db.push(row);}
+  inputs.forEach(inp=>{row[inp.name]=inp.value||row[inp.name]});
+  modal.style.display='none';
+  render();
 };
-modal.onclick=e=>{if(e.target.id==='modal')modal.style.display='none'};
+modal.onclick=e=>{if(e.target.id==='modal') modal.style.display='none'};
 
-// ---------- EVENTS ----------
-fillMonthOptions();buildCards();render();
-$$('.tab-btn').forEach(b=>b.onclick=()=>{$$('.tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#finance').style.display=b.dataset.tab==='finance'?'grid':'none';$('#advanced').style.display=b.dataset.tab==='advanced'?'grid':'none';});
-$("#monthSel").onchange=e=>{selYM=e.target.value;render();};
-$$('input[name=mode]').forEach(r=>r.onchange=e=>{mode=e.target.value;render();});
+// ---------- eventos ----------
+fillMonthOptions();
+buildCards();
+render();
+
+$$('.tab-btn').forEach(b=>b.onclick=()=>{
+  $$('.tab-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  $('#finance').style.display=b.dataset.tab==='finance'?'grid':'none';
+  $('#advanced').style.display=b.dataset.tab==='advanced'?'grid':'none';
+});
+$("#monthSel").onchange=e=>{selYM=e.target.value; render();};
+$$('input[name=mode]').forEach(r=>r.onchange=e=>{mode=e.target.value; render();});
 </script>
 </body>
 </html>
