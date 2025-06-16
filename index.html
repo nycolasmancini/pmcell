@@ -293,18 +293,56 @@ form.onsubmit=e=>{
 };
 modal.onclick=e=>{if(e.target.id==='modal') modal.style.display='none'};
 
-/* ---------- inicialização ---------- */
-fillMonths(); buildCards(); render();
+/* ---------- funções das abas ---------- */
+function switchTab(tabName) {
+  // Remove active class from all tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  // Add active class to clicked button
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+  
+  // Show/hide sections
+  const financeSection = document.getElementById('finance');
+  const advancedSection = document.getElementById('advanced');
+  
+  if (tabName === 'finance') {
+    financeSection.style.display = 'grid';
+    advancedSection.style.display = 'none';
+  } else if (tabName === 'advanced') {
+    financeSection.style.display = 'none';
+    advancedSection.style.display = 'grid';
+  }
+}
 
-/* eventos das abas e filtros */
-$$('.tab-btn').forEach(btn=>btn.onclick=()=>{
-  $$('.tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  $('#finance').style.display=btn.dataset.tab==='finance'?'grid':'none';
-  $('#advanced').style.display=btn.dataset.tab==='advanced'?'grid':'none';
+/* ---------- inicialização ---------- */
+fillMonths(); 
+buildCards(); 
+render();
+
+// Aguarda o DOM estar completamente carregado
+document.addEventListener('DOMContentLoaded', function() {
+  /* eventos das abas */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      switchTab(this.dataset.tab);
+    });
+  });
+  
+  /* eventos dos filtros */
+  document.getElementById("monthSel").addEventListener('change', function(e) {
+    selYM = e.target.value; 
+    render();
+  });
+  
+  document.querySelectorAll('input[name=mode]').forEach(radio => {
+    radio.addEventListener('change', function(e) {
+      mode = e.target.value; 
+      render();
+    });
+  });
 });
-$("#monthSel").onchange=e=>{selYM=e.target.value; render();};
-$$('input[name=mode]').forEach(r=>r.onchange=e=>{mode=e.target.value; render();});
 </script>
 </body>
 </html>
