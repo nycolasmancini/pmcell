@@ -1,0 +1,963 @@
+import React, { useState, useMemo } from 'react';
+
+// Ícones simples em SVG (substituindo Lucide)
+const icons = {
+  Plus: () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+    </svg>
+  ),
+  DollarSign: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+    </svg>
+  ),
+  ShoppingCart: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293a1 1 0 00-.293.707V19a2 2 0 002 2h9a2 2 0 002-2v-1.586a1 1 0 00-.293-.707L16 15H7z" />
+    </svg>
+  ),
+  TrendingUp: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+    </svg>
+  ),
+  Users: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+    </svg>
+  ),
+  Clock: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  AlertTriangle: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.958-.833-2.728 0L4.086 16.5c-.77.833.192 2.5 1.732 2.5z" />
+    </svg>
+  ),
+  CheckCircle: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  RefreshCw: ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+  ),
+  Settings: () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+  Wifi: () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+    </svg>
+  ),
+  WifiOff: () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636L5.636 18.364m5.657-7.071a2.5 2.5 0 013.536 0M9 9a6 6 0 018.485 0M3 3a18 18 0 0118 18" />
+    </svg>
+  ),
+  Database: () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2 4.477 4 10 4s10-2 10-4V7M4 7c0 2 4.477 4 10 4s10-2 10-4M4 7c0-2 4.477-4 10-4s10 2 10 4m0 5c0 2-4.477 4-10 4S4 14 4 12" />
+    </svg>
+  ),
+  AlertCircle: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  )
+};
+
+const App = () => {
+  const [db, setDb] = useState([]);
+  const [viewMode, setViewMode] = useState('month');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [activeTab, setActiveTab] = useState('financeiro');
+  const [showForm, setShowForm] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('disconnected');
+  const [lastSync, setLastSync] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  
+  const [config, setConfig] = useState({
+    appsScriptUrl: 'https://script.google.com/macros/s/AKfycbw0je21cvfyEleIXEJOgoU3bWJn1STJeorqaS0UI4ujjDGsVSpQGNsU31k5soKjwN86/exec',
+    sheetName: 'Sheet1'
+  });
+
+  const [formData, setFormData] = useState({
+    data: new Date().toISOString().split('T')[0],
+    fatur: '', cmv: '', compras: '', desp: '',
+    saldoI: '', saldoN: '', saldoD: '', saldoC: '',
+    contasP: '', contasR: '', pedidosDia: '', pedidosAb: '',
+    mercadoriasNaoSeparadas: '',
+    leads: '', novos: '', diasUteis: '',
+    jairFat: '', jairLucro: '', jairNovos: '',
+    laisFat: '', laisLucro: '', laisNovos: '',
+    rafaelaFat: '', rafaelaLucro: '', rafaelaNovos: '',
+    nycolasFat: '', nycolasLucro: '', nycolasNovos: '',
+    natalieFat: '', natalieLucro: '', natalieNovos: ''
+  });
+
+  const isConfigured = config.appsScriptUrl && config.appsScriptUrl.trim().length > 0;
+
+  const testConnection = async () => {
+    if (!isConfigured) {
+      setConnectionStatus('disconnected');
+      setErrorMessage('Configure a URL do Google Apps Script primeiro');
+      return false;
+    }
+
+    setConnectionStatus('connecting');
+    setErrorMessage('');
+    
+    try {
+      const response = await fetch(`${config.appsScriptUrl}?action=getData`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Erro desconhecido do Apps Script');
+      }
+
+      setConnectionStatus('connected');
+      setErrorMessage('');
+      return true;
+    } catch (error) {
+      setConnectionStatus('error');
+      setErrorMessage(error.message);
+      console.error('Erro no teste de conexão:', error);
+      return false;
+    }
+  };
+
+  const fetchGoogleSheetsData = async () => {
+    if (!isConfigured) {
+      setErrorMessage('Configure a URL do Google Apps Script primeiro');
+      return;
+    }
+
+    setLoading(true);
+    setConnectionStatus('connecting');
+    
+    try {
+      const response = await fetch(`${config.appsScriptUrl}?action=getData`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Erro na requisição`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao buscar dados');
+      }
+      
+      let data = result.data || [];
+      
+      console.log('Dados recebidos (brutos):', data);
+
+      // Processar e limpar os dados recebidos
+      data = data.map(item => {
+        const processedItem = { ...item };
+        
+        // Converter data ISO para formato YYYY-MM-DD
+        if (processedItem.data && typeof processedItem.data === 'string') {
+          if (processedItem.data.includes('T')) {
+            processedItem.data = processedItem.data.split('T')[0];
+          }
+        }
+        
+        // Converter strings vazias para zero nos campos numéricos
+        const numericFields = [
+          'fatur', 'cmv', 'compras', 'desp', 'saldoI', 'saldoN', 'saldoD', 'saldoC',
+          'contasP', 'contasR', 'pedidosDia', 'pedidosAb', 'mercadoriasNaoSeparadas',
+          'leads', 'novos', 'diasUteis', 'margem',
+          'jairFat', 'jairLucro', 'jairNovos',
+          'laisFat', 'laisLucro', 'laisNovos',
+          'rafaelaFat', 'rafaelaLucro', 'rafaelaNovos',
+          'nycolasFat', 'nycolasLucro', 'nycolasNovos',
+          'natalieFat', 'natalieLucro', 'natalieNovos'
+        ];
+        
+        numericFields.forEach(field => {
+          if (processedItem[field] === '' || processedItem[field] === null || processedItem[field] === undefined) {
+            processedItem[field] = '0';
+          }
+        });
+        
+        // Calcular campos derivados se não existirem
+        const vendedores = ['jair', 'lais', 'rafaela', 'nycolas', 'natalie'];
+        const faturamentoTotal = vendedores.reduce((total, vendedor) => {
+          return total + (Number(processedItem[`${vendedor}Fat`]) || 0);
+        }, 0);
+        
+        const lucroTotal = vendedores.reduce((total, vendedor) => {
+          return total + (Number(processedItem[`${vendedor}Lucro`]) || 0);
+        }, 0);
+        
+        if (!processedItem.fatur || processedItem.fatur === '0') {
+          processedItem.fatur = faturamentoTotal.toString();
+        }
+        
+        if (!processedItem.cmv || processedItem.cmv === '0') {
+          processedItem.cmv = (faturamentoTotal - lucroTotal).toString();
+        }
+        
+        if (!processedItem.margem || processedItem.margem === '0') {
+          processedItem.margem = faturamentoTotal > 0 ? (lucroTotal / faturamentoTotal) : 0;
+        }
+        
+        return processedItem;
+      });
+      
+      console.log('Dados processados:', data);
+
+      setDb(data);
+      setConnectionStatus('connected');
+      setLastSync(new Date());
+      setErrorMessage('');
+      alert(`✅ ${data.length} registros carregados com sucesso!`);
+      
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
+      setConnectionStatus('error');
+      setErrorMessage(error.message);
+      alert(`❌ Erro ao buscar dados: ${error.message}`);
+    }
+    setLoading(false);
+  };
+
+  const appendToGoogleSheets = async (newRecord) => {
+    if (!isConfigured) {
+      setErrorMessage('Configure a URL do Google Apps Script primeiro');
+      return false;
+    }
+
+    try {
+      const response = await fetch(config.appsScriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'addData',
+          record: newRecord
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Erro na requisição`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao adicionar dados');
+      }
+
+      setConnectionStatus('connected');
+      setErrorMessage('');
+      return true;
+    } catch (error) {
+      console.error('Erro ao adicionar dados:', error);
+      setConnectionStatus('error');
+      setErrorMessage(error.message);
+      return false;
+    }
+  };
+
+  const saveConfig = async () => {
+    const success = await testConnection();
+    if (success) {
+      setShowConfig(false);
+      alert('✅ Configuração testada com sucesso!');
+    } else {
+      alert('⚠️ Há problema na conexão. Verifique a URL do Apps Script.');
+    }
+  };
+
+  const addTestData = () => {
+    const testRecord = {
+      data: '2025-06-17',
+      diasUteis: '22',
+      saldoI: '15000',
+      saldoN: '8500',
+      saldoD: '2500',
+      saldoC: '1200',
+      contasP: '25000',
+      contasR: '18000',
+      pedidosDia: '45',
+      pedidosAb: '12',
+      mercadoriasNaoSeparadas: '85000',
+      compras: '12000',
+      desp: '8500',
+      leads: '120',
+      novos: '8',
+      jairFat: '25000',
+      jairLucro: '15000',
+      jairNovos: '2',
+      laisFat: '18000',
+      laisLucro: '12000',
+      laisNovos: '3',
+      rafaelaFat: '22000',
+      rafaelaLucro: '14000',
+      rafaelaNovos: '1',
+      nycolasFat: '20000',
+      nycolasLucro: '13000',
+      nycolasNovos: '2',
+      natalieFat: '15000',
+      natalieLucro: '10000',
+      natalieNovos: '0',
+      fatur: '100000',
+      cmv: '36000',
+      margem: 0.64
+    };
+
+    setDb(prev => [testRecord, ...prev.filter(item => item.data !== testRecord.data)]);
+    alert('✅ Dados de teste adicionados localmente!');
+  };
+
+  const ConnectionStatus = () => {
+    const getStatusIcon = () => {
+      switch (connectionStatus) {
+        case 'connected': return <icons.Wifi />;
+        case 'connecting': return <icons.RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
+        case 'error': return <icons.WifiOff />;
+        default: return <icons.Database />;
+      }
+    };
+
+    const getStatusText = () => {
+      switch (connectionStatus) {
+        case 'connected': return 'Conectado';
+        case 'connecting': return 'Conectando...';
+        case 'error': return 'Erro de conexão';
+        default: return 'Não configurado';
+      }
+    };
+
+    const getStatusColor = () => {
+      switch (connectionStatus) {
+        case 'connected': return 'text-green-600 bg-green-50 border-green-200';
+        case 'connecting': return 'text-blue-600 bg-blue-50 border-blue-200';
+        case 'error': return 'text-red-600 bg-red-50 border-red-200';
+        default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      }
+    };
+
+    return (
+      <div className={`flex items-center space-x-2 px-3 py-1 rounded-lg border text-sm ${getStatusColor()}`}>
+        {getStatusIcon()}
+        <span>{getStatusText()}</span>
+        {lastSync && connectionStatus === 'connected' && (
+          <span className="text-xs">({lastSync.toLocaleTimeString()})</span>
+        )}
+      </div>
+    );
+  };
+
+  const fmt = (value, type = 'currency') => {
+    const num = Number(value) || 0;
+    if (type === 'currency') {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num);
+    } else if (type === 'percent') {
+      return `${num.toFixed(1)}%`;
+    }
+    return num.toLocaleString('pt-BR');
+  };
+
+  const sumData = (array, field) => array.reduce((total, obj) => total + (Number(obj[field]) || 0), 0);
+
+  const filteredData = useMemo(() => {
+    if (viewMode === 'day') {
+      return db.filter(item => {
+        const itemDate = item.data && item.data.includes('T') ? item.data.split('T')[0] : item.data;
+        return itemDate === selectedDate;
+      });
+    } else {
+      return db.filter(item => {
+        const itemDate = item.data && item.data.includes('T') ? item.data.split('T')[0] : item.data;
+        return itemDate && itemDate.startsWith(selectedMonth);
+      });
+    }
+  }, [db, viewMode, selectedDate, selectedMonth]);
+
+  const metrics = useMemo(() => {
+    const current = filteredData[0] || {};
+    
+    if (viewMode === 'day') {
+      return {
+        faturamento: Number(current.fatur) || 0,
+        cmv: Number(current.cmv) || 0,
+        margem: Number(current.margem) || 0,
+        compras: Number(current.compras) || 0,
+        despesas: Number(current.desp) || 0,
+        saldos: {
+          itau: Number(current.saldoI) || 0,
+          nubank: Number(current.saldoN) || 0,
+          dinheiro: Number(current.saldoD) || 0,
+          cartao: Number(current.saldoC) || 0
+        },
+        contasP: Number(current.contasP) || 0,
+        contasR: Number(current.contasR) || 0,
+        pedidosDia: Number(current.pedidosDia) || 0,
+        pedidosAb: Number(current.pedidosAb) || 0,
+        pedidosAbValor: Number(current.mercadoriasNaoSeparadas) || 0,
+        leads: Number(current.leads) || 0,
+        novos: Number(current.novos) || 0
+      };
+    } else {
+      const lastDay = filteredData[filteredData.length - 1] || {};
+      return {
+        faturamento: sumData(filteredData, 'fatur'),
+        cmv: sumData(filteredData, 'cmv'),
+        margem: filteredData.length ? sumData(filteredData, 'margem') / filteredData.length : 0,
+        compras: sumData(filteredData, 'compras'),
+        despesas: sumData(filteredData, 'desp'),
+        saldos: {
+          itau: Number(lastDay.saldoI) || 0,
+          nubank: Number(lastDay.saldoN) || 0,
+          dinheiro: Number(lastDay.saldoD) || 0,
+          cartao: Number(lastDay.saldoC) || 0
+        },
+        contasP: Number(lastDay.contasP) || 0,
+        contasR: Number(lastDay.contasR) || 0,
+        pedidosDia: sumData(filteredData, 'pedidosDia'),
+        pedidosAb: Number(lastDay.pedidosAb) || 0,
+        pedidosAbValor: Number(lastDay.mercadoriasNaoSeparadas) || 0,
+        leads: sumData(filteredData, 'leads'),
+        novos: sumData(filteredData, 'novos'),
+        diasUteis: Number(lastDay.diasUteis) || 22,
+        projecao: filteredData.length ? (sumData(filteredData, 'fatur') / filteredData.length) * (Number(lastDay.diasUteis) || 22) : 0
+      };
+    }
+  }, [filteredData, viewMode]);
+
+  const vendedoresData = useMemo(() => {
+    const vendedores = ['jair', 'lais', 'rafaela', 'nycolas', 'natalie'];
+    const nomes = { jair: 'Jair', lais: 'Laís', rafaela: 'Rafaela', nycolas: 'Nycolas', natalie: 'Natalie' };
+
+    return vendedores.map(vendedor => {
+      let faturamento, lucro, novosClientes, projecao = 0;
+
+      if (viewMode === 'day') {
+        const current = filteredData[0] || {};
+        faturamento = Number(current[`${vendedor}Fat`]) || 0;
+        lucro = Number(current[`${vendedor}Lucro`]) || 0;
+        novosClientes = Number(current[`${vendedor}Novos`]) || 0;
+      } else {
+        faturamento = sumData(filteredData, `${vendedor}Fat`);
+        lucro = sumData(filteredData, `${vendedor}Lucro`);
+        novosClientes = sumData(filteredData, `${vendedor}Novos`);
+        
+        const lastDay = filteredData[filteredData.length - 1] || {};
+        const diasUteis = Number(lastDay.diasUteis) || 22;
+        if (filteredData.length > 0) {
+          projecao = (faturamento / filteredData.length) * diasUteis;
+        }
+      }
+
+      return {
+        nome: nomes[vendedor],
+        faturamento,
+        margem: faturamento > 0 ? lucro / faturamento : 0,
+        lucro,
+        novosClientes,
+        projecao
+      };
+    }).sort((a, b) => b.faturamento - a.faturamento);
+  }, [filteredData, viewMode]);
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const newRecord = { ...formData };
+    
+    const vendedores = ['jair', 'lais', 'rafaela', 'nycolas', 'natalie'];
+    const faturamentoTotal = vendedores.reduce((total, vendedor) => {
+      return total + (Number(newRecord[`${vendedor}Fat`]) || 0);
+    }, 0);
+    
+    const lucroTotal = vendedores.reduce((total, vendedor) => {
+      return total + (Number(newRecord[`${vendedor}Lucro`]) || 0);
+    }, 0);
+    
+    const cmvTotal = faturamentoTotal - lucroTotal;
+    
+    newRecord.fatur = faturamentoTotal.toString();
+    newRecord.cmv = cmvTotal.toString();
+    newRecord.margem = faturamentoTotal > 0 ? lucroTotal / faturamentoTotal : 0;
+
+    if (config.appsScriptUrl) {
+      const recordToSend = { ...newRecord };
+      
+      const success = await appendToGoogleSheets(recordToSend);
+      if (success) {
+        const existingIndex = db.findIndex(item => {
+          const itemDate = item.data && item.data.includes('T') ? item.data.split('T')[0] : item.data;
+          return itemDate === newRecord.data;
+        });
+        
+        if (existingIndex >= 0) {
+          const newDb = [...db];
+          newDb[existingIndex] = newRecord;
+          setDb(newDb);
+        } else {
+          setDb(prev => [...prev, newRecord].sort((a, b) => {
+            const dateA = a.data && a.data.includes('T') ? a.data.split('T')[0] : a.data;
+            const dateB = b.data && b.data.includes('T') ? b.data.split('T')[0] : b.data;
+            return dateA.localeCompare(dateB);
+          }));
+        }
+        alert('✅ Dados salvos na planilha e localmente!');
+        await fetchGoogleSheetsData();
+      }
+    } else {
+      const existingIndex = db.findIndex(item => item.data === newRecord.data);
+      if (existingIndex >= 0) {
+        const newDb = [...db];
+        newDb[existingIndex] = newRecord;
+        setDb(newDb);
+      } else {
+        setDb(prev => [...prev, newRecord].sort((a, b) => a.data.localeCompare(b.data)));
+      }
+      alert('💾 Dados salvos localmente. Configure Google Apps Script para sincronização automática.');
+    }
+
+    setShowForm(false);
+  };
+
+  const Card = ({ title, value, subtitle, icon: Icon, color = 'blue', children }) => (
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-gray-600">{title}</h3>
+        {Icon && <Icon />}
+      </div>
+      <div className="space-y-2">
+        <div className="text-2xl font-bold text-gray-900">{value}</div>
+        {subtitle && <div className="text-sm text-gray-500">{subtitle}</div>}
+        {children}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-8">
+              <h1 className="text-2xl font-bold text-orange-500">PMCELL Dashboard</h1>
+              
+              <nav className="flex space-x-8">
+                {['financeiro', 'avancados', 'vendedores'].map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      activeTab === tab
+                        ? 'border-orange-500 text-orange-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {tab === 'financeiro' ? 'Financeiro' : tab === 'avancados' ? 'Avançados' : 'Vendedores'}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <ConnectionStatus />
+              
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('day')}
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'day' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                  }`}
+                >
+                  Dia
+                </button>
+                <button
+                  onClick={() => setViewMode('month')}
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'month' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                  }`}
+                >
+                  Mês
+                </button>
+              </div>
+
+              {viewMode === 'day' ? (
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                />
+              ) : (
+                <input
+                  type="month"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                />
+              )}
+
+              <button
+                onClick={addTestData}
+                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
+                title="Adicionar dados de teste"
+              >
+                <icons.Database />
+                <span>Teste</span>
+              </button>
+
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center space-x-2"
+              >
+                <icons.Plus />
+                <span>Novo</span>
+              </button>
+
+              <button
+                onClick={() => setShowConfig(true)}
+                className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                title="Configurações do Google Sheets"
+              >
+                <icons.Settings />
+              </button>
+
+              <button 
+                onClick={fetchGoogleSheetsData}
+                disabled={loading}
+                className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                title="Sincronizar com Google Sheets"
+              >
+                <icons.RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Status Banner */}
+        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center space-x-3">
+            <icons.CheckCircle />
+            <div>
+              <h3 className="text-sm font-medium text-green-800">🎉 Dashboard Standalone - Sem Dependências!</h3>
+              <p className="text-sm text-green-700 mt-1">
+                Versão otimizada que funciona em qualquer ambiente. Teste a sincronização clicando no botão 🔄!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Statistics */}
+        <div className="mb-6 grid grid-cols-4 gap-4">
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="text-2xl font-bold text-gray-900">{db.length}</div>
+            <div className="text-sm text-gray-500">Registros carregados</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="text-2xl font-bold text-gray-900">{filteredData.length}</div>
+            <div className="text-sm text-gray-500">Registros filtrados</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="text-2xl font-bold text-gray-900">
+              {isConfigured ? '✅' : '❌'}
+            </div>
+            <div className="text-sm text-gray-500">Configuração</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="text-2xl font-bold text-gray-900">
+              {connectionStatus === 'connected' ? '🟢' : connectionStatus === 'error' ? '🔴' : '🟡'}
+            </div>
+            <div className="text-sm text-gray-500">Status API</div>
+          </div>
+        </div>
+
+        {/* Financial Tab */}
+        {activeTab === 'financeiro' && (
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            <Card
+              title="Faturamento"
+              value={fmt(metrics.faturamento)}
+              subtitle={viewMode === 'month' ? `Projeção: ${fmt(metrics.projecao)}` : ''}
+              icon={icons.DollarSign}
+            />
+
+            <Card
+              title="CMV"
+              value={viewMode === 'month' ? fmt(metrics.cmv / (filteredData.length || 1)) : fmt(metrics.cmv)}
+              subtitle={viewMode === 'month' ? 'Média diária' : ''}
+              icon={icons.ShoppingCart}
+            />
+
+            <Card
+              title="Margem Bruta"
+              value={fmt(metrics.margem * 100, 'percent')}
+              icon={icons.TrendingUp}
+            />
+
+            <Card title="Saldos Bancários" value="" icon={icons.DollarSign}>
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="text-center">
+                  <div className="text-xs text-gray-500">Itaú</div>
+                  <div className={`font-semibold ${metrics.saldos.itau >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {fmt(metrics.saldos.itau)}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-500">Nubank</div>
+                  <div className={`font-semibold ${metrics.saldos.nubank >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {fmt(metrics.saldos.nubank)}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-500">Dinheiro</div>
+                  <div className={`font-semibold ${metrics.saldos.dinheiro >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {fmt(metrics.saldos.dinheiro)}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-500">Cartão</div>
+                  <div className={`font-semibold ${metrics.saldos.cartao >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {fmt(metrics.saldos.cartao)}
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card title="Fornecedores a Pagar" value={fmt(metrics.contasP)} icon={icons.AlertTriangle} />
+            <Card title="Contas a Receber" value={fmt(metrics.contasR)} icon={icons.CheckCircle} />
+            <Card title="Pedidos do Dia" value={metrics.pedidosDia.toLocaleString('pt-BR')} icon={icons.ShoppingCart} />
+            <Card title="Pedidos Pendentes" value={metrics.pedidosAb.toLocaleString('pt-BR')} subtitle={`Valor: ${fmt(metrics.pedidosAbValor)}`} icon={icons.Clock} />
+            <Card title="Compras + Despesas" value={fmt(metrics.compras + metrics.despesas)} icon={icons.ShoppingCart} />
+          </div>
+        )}
+
+        {/* Advanced Tab */}
+        {activeTab === 'avancados' && (
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            <Card title="Ticket Médio" value={fmt(metrics.faturamento / (metrics.pedidosDia || 1))} icon={icons.DollarSign} />
+            <Card title="Lucro Bruto" value={fmt(metrics.faturamento - metrics.cmv)} icon={icons.TrendingUp} />
+            <Card title="Despesas Operacionais" value={fmt(metrics.despesas)} icon={icons.AlertTriangle} />
+            <Card title="Leads Gerados" value={metrics.leads.toLocaleString('pt-BR')} icon={icons.Users} />
+            <Card title="Taxa de Conversão" value={fmt((metrics.pedidosDia / (metrics.leads || 1)) * 100, 'percent')} icon={icons.TrendingUp} />
+            <Card title="Novos Clientes" value={metrics.novos.toLocaleString('pt-BR')} icon={icons.Users} />
+          </div>
+        )}
+
+        {/* Sellers Tab */}
+        {activeTab === 'vendedores' && (
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            {vendedoresData.map((vendedor, index) => (
+              <Card
+                key={vendedor.nome}
+                title={`#${index + 1} ${vendedor.nome}`}
+                value={fmt(vendedor.faturamento)}
+                subtitle={viewMode === 'month' ? `Projeção: ${fmt(vendedor.projecao)}` : ''}
+              >
+                <div className="mt-3 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Margem:</span>
+                    <span className="font-medium">{fmt(vendedor.margem * 100, 'percent')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Lucro:</span>
+                    <span className="font-medium">{fmt(vendedor.lucro)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Novos:</span>
+                    <span className="font-medium">{vendedor.novosClientes}</span>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
+
+      {/* Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl w-full max-w-4xl mx-4 my-8 flex flex-col max-h-[calc(100vh-4rem)]">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Novo Registro</h2>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+              <form onSubmit={handleFormSubmit} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Data</label>
+                    <input
+                      type="date"
+                      value={formData.data}
+                      onChange={(e) => setFormData(prev => ({ ...prev, data: e.target.value }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Dias Úteis</label>
+                    <input
+                      type="number"
+                      value={formData.diasUteis}
+                      onChange={(e) => setFormData(prev => ({ ...prev, diasUteis: e.target.value }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      placeholder="22"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Saldos Bancários</h3>
+                  <div className="grid grid-cols-4 gap-4">
+                    {['saldoI', 'saldoN', 'saldoD', 'saldoC'].map((field, index) => {
+                      const labels = ['Saldo Itaú', 'Saldo Nubank', 'Dinheiro', 'Cartão'];
+                      return (
+                        <div key={field}>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{labels[index]}</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={formData[field]}
+                            onChange={(e) => setFormData(prev => ({ ...prev, [field]: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Dados dos Vendedores</h3>
+                  {['jair', 'lais', 'rafaela', 'nycolas', 'natalie'].map(vendedor => (
+                    <div key={vendedor} className="mb-4">
+                      <h4 className="text-md font-medium text-gray-700 mb-3 capitalize">
+                        {vendedor === 'lais' ? 'Laís' : vendedor}
+                      </h4>
+                      <div className="grid grid-cols-3 gap-4">
+                        {[
+                          { suffix: 'Fat', label: 'Faturamento' },
+                          { suffix: 'Lucro', label: 'Lucro' },
+                          { suffix: 'Novos', label: 'Novos Clientes', type: 'number' }
+                        ].map(({ suffix, label, type = 'number' }) => (
+                          <div key={`${vendedor}${suffix}`}>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+                            <input
+                              type={type}
+                              step={type === 'number' && suffix !== 'Novos' ? '0.01' : undefined}
+                              value={formData[`${vendedor}${suffix}`]}
+                              onChange={(e) => setFormData(prev => ({ ...prev, [`${vendedor}${suffix}`]: e.target.value }))}
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Config Modal */}
+      {showConfig && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl w-full max-w-2xl mx-4">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Configurações do Google Sheets</h2>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">URL do Google Apps Script</label>
+                <input
+                  type="text"
+                  value={config.appsScriptUrl}
+                  onChange={(e) => setConfig(prev => ({ ...prev, appsScriptUrl: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  placeholder="https://script.google.com/macros/s/.../exec"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Cole aqui a URL do seu Google Apps Script implantado
+                </p>
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-medium text-green-900 mb-2">✅ Apps Script Configurado!</h3>
+                <div className="text-sm text-green-800 space-y-2">
+                  <p><strong>URL Atual:</strong></p>
+                  <code className="bg-white px-2 py-1 rounded text-xs block">
+                    {config.appsScriptUrl}
+                  </code>
+                  <p>Esta é a URL configurada para integração com Google Sheets.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-4 p-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowConfig(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={saveConfig}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                Salvar e Testar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default App;
